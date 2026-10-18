@@ -1,0 +1,11 @@
+# Ništa od ovoga ne sme da završi u image-u
+.env
+.env.*
+!.env.example
+.git
+**/__pycache__
+**/*.pyc
+**/*.db
+**/.pytest_cache
+**/.venv
+backend

@@ -1,0 +1,48 @@
+name: gufetto
+
+# Image-i idu na Docker Hub kao <DOCKERHUB_USER>/gufetto-backend i <DOCKERHUB_USER>/gufetto-web
+
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?postavi MSSQL_SA_PASSWORD u .env}
+    volumes:
+      - mssql-data:/var/opt/mssql
+    # Port je otvoren samo na localhost-u, za SSMS / Azure Data Studio
+    ports:
+      - "127.0.0.1:${MSSQL_PORT:-1433}:1433"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' -b -o /dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    restart: unless-stopped
+
+  backend:
+    image: ${DOCKERHUB_USER:-gufetto}/gufetto-backend:${GUFETTO_TAG:-latest}
+    build: ./backend
+    env_file: .env
+    environment:
+      DATABASE_URL: "mssql+pyodbc://sa:${MSSQL_SA_PASSWORD}@db:1433/gufetto?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  web:
+    image: ${DOCKERHUB_USER:-gufetto}/gufetto-web:${GUFETTO_TAG:-latest}
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    ports:
+      - "${GUFETTO_PORT:-8080}:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  mssql-data:

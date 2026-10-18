@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gufetto</title>
+<link rel="icon" href="assets/favicon.ico" sizes="any">
+<link rel="icon" href="assets/gufetto.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta name="theme-color" content="#151a21">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  @font-face { font-family: "Fredoka"; font-weight: 600; font-display: swap; src: url("assets/fonts/fredoka-latin-600-normal.woff2") format("woff2"); }
+  :root {
+    --bg: #0e1116;
+    --panel: #151a21;
+    --panel-2: #1b222b;
+    --line: #262f3a;
+    --text: #d9e0e8;
+    --muted: #8593a3;
+    --accent: #e0a84f;          /* sovine oči */
+    --malicious: #f0605d;
+    --suspicious: #e9a23b;
+    --clean: #4fbf86;
+    --unknown: #7d8a99;
+    --internal: #6c9bd2;
+    --mono: "IBM Plex Mono", ui-monospace, monospace;
+    --sans: "IBM Plex Sans", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.5 var(--sans);
+  }
+  header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 24px; border-bottom: 1px solid var(--line); background: var(--panel);
+  }
+  .logo { display: flex; align-items: center; gap: 6px; font: 600 23px/1 "Fredoka", var(--sans); letter-spacing: .2px; color: #f3f5f8; }
+  .logo em { font-style: normal; color: var(--accent); }
+  .logo img { width: 40px; height: 40px; }
+  .welcome { text-align: center; color: var(--muted); padding: 36px 16px 10px; }
+  .welcome img { width: 150px; height: 150px; display: block; margin: 0 auto 14px; }
+  .welcome h2 { margin: 0 0 4px; color: var(--text); font-size: 18px; font-weight: 600; }
+  .welcome p { margin: 0; font-size: 14px; }
+  .tag { color: var(--muted); font-size: 13px; }
+  .providers { margin-left: auto; display: flex; gap: 12px; font: 12px var(--mono); color: var(--muted); }
+  .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; background: var(--unknown); }
+  .dot.on { background: var(--clean); }
+  .dot.off { background: var(--malicious); }
+
+  main { max-width: 1040px; margin: 0 auto; padding: 24px 16px 60px; }
+  .input-box { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+  .input-box label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+  textarea {
+    width: 100%; min-height: 130px; resize: vertical;
+    background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px;
+    padding: 12px; font: 13px/1.5 var(--mono);
+  }
+  textarea:focus { outline: 1px solid var(--accent); border-color: var(--accent); }
+  .actions { display: flex; align-items: center; gap: 14px; margin-top: 12px; flex-wrap: wrap; }
+  button {
+    background: var(--accent); color: #1a1205; border: 0; border-radius: 7px;
+    padding: 9px 18px; font: 600 14px var(--sans); cursor: pointer;
+  }
+  button:disabled { opacity: .5; cursor: wait; }
+  button.ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); font-weight: 500; }
+  .check { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+  .hint { font-size: 12px; color: var(--muted); margin-left: auto; }
+
+  .summary { display: flex; gap: 10px; margin: 22px 0 12px; flex-wrap: wrap; }
+  .pill { font: 12px var(--mono); padding: 4px 10px; border-radius: 99px; background: var(--panel-2); border: 1px solid var(--line); }
+
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--unknown);
+    border-radius: 10px; padding: 14px 16px; margin-bottom: 10px;
+  }
+  .card.malicious { border-left-color: var(--malicious); }
+  .card.suspicious { border-left-color: var(--suspicious); }
+  .card.clean { border-left-color: var(--clean); }
+  .card.internal { border-left-color: var(--internal); }
+  .card-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .ioc { font: 500 14px var(--mono); word-break: break-all; }
+  .type { font: 11px var(--mono); color: var(--muted); text-transform: uppercase; border: 1px solid var(--line); padding: 1px 6px; border-radius: 4px; }
+  .verdict { font: 600 12px var(--mono); text-transform: uppercase; letter-spacing: .5px; }
+  .verdict.malicious { color: var(--malicious); }
+  .verdict.suspicious { color: var(--suspicious); }
+  .verdict.clean { color: var(--clean); }
+  .verdict.unknown { color: var(--unknown); }
+  .verdict.internal { color: var(--internal); }
+  .score { margin-left: auto; display: flex; align-items: center; gap: 8px; font: 13px var(--mono); color: var(--muted); }
+  .bar { width: 90px; height: 6px; background: var(--panel-2); border-radius: 3px; overflow: hidden; }
+  .bar span { display: block; height: 100%; }
+  ul.reasons { margin: 10px 0 0; padding-left: 18px; color: var(--text); font-size: 14px; }
+  ul.reasons li { margin: 2px 0; }
+  details { margin-top: 10px; }
+  summary { cursor: pointer; font-size: 12px; color: var(--muted); }
+  .prov { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; margin-top: 10px; }
+  .prov-box { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font: 12px/1.6 var(--mono); }
+  .prov-box h4 { margin: 0 0 6px; font: 600 12px var(--mono); color: var(--accent); display: flex; justify-content: space-between; }
+  .prov-box .k { color: var(--muted); }
+  .prov-box a { color: var(--accent); }
+  .copy { font-size: 11px; padding: 3px 8px; }
+  .empty, .error { text-align: center; color: var(--muted); padding: 30px; }
+  .error { color: var(--malicious); }
+  @media (max-width: 640px) {
+    header { flex-wrap: wrap; padding: 12px 16px; }
+    .providers { margin-left: 0; width: 100%; }
+    .score { margin-left: 0; width: 100%; }
+    .hint { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <img src="assets/gufetto-mark.png" alt="">
+    <span>Gufett<em>o</em></span>
+  </div>
+  <span class="tag">SOC triage assistant</span>
+  <div class="providers" id="providers"></div>
+</header>
+
+<main>
+  <div class="input-box">
+    <label for="input">Paste an IOC, a log line, an alert or an email body. Defanged indicators (hxxp, [.]) are fine.</label>
+    <textarea id="input" spellcheck="false" placeholder="185.220.101.1&#10;hxxps://login-micros0ft[.]com/verify&#10;44d88612fea8a8f36de82e1278abb02f"></textarea>
+    <div class="actions">
+      <button id="go">Analyze</button>
+      <button id="extract" class="ghost">Extract only</button>
+      <label class="check"><input type="checkbox" id="refresh"> Skip cache</label>
+      <label class="check" title="Show hxxp and [.] so indicators can't be clicked by accident when pasted into tickets or chat"><input type="checkbox" id="defang"> Defang</label>
+      <span class="hint">Ctrl + Enter</span>
+    </div>
+  </div>
+
+  <div id="summary" class="summary"></div>
+  <div id="results">
+    <div class="welcome">
+      <img src="assets/gufetto.svg" alt="Gufetto the owl">
+      <h2>Hoo's suspicious today?</h2>
+      <p>Paste something above and Gufetto will take a look.</p>
+    </div>
+  </div>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const COLORS = { malicious: "var(--malicious)", suspicious: "var(--suspicious)", clean: "var(--clean)", unknown: "var(--unknown)", internal: "var(--internal)" };
+
+  // Sve što dolazi iz unosa i od provajdera je nepoverljiv sadržaj: uvek escape.
+  const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  async function api(path, body) {
+    const res = await fetch(path, {
+      method: body ? "POST" : "GET",
+      headers: body ? { "Content-Type": "application/json" } : {},
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    return res.json();
+  }
+
+  async function loadHealth() {
+    try {
+      const h = await api("/api/health");
+      $("providers").innerHTML = Object.entries(h.providers)
+        .map(([name, on]) => `<span title="${on ? "API key configured" : "API key missing"}"><span class="dot ${on ? "on" : "off"}"></span>${esc(name)}</span>`)
+        .join("");
+    } catch {
+      $("providers").innerHTML = `<span><span class="dot off"></span>backend offline</span>`;
+    }
+  }
+
+  function providerBox(p) {
+    const rows = Object.entries(p.summary || {})
+      .filter(([k, v]) => v !== null && v !== "" && !(Array.isArray(v) && !v.length) && k !== "link")
+      .map(([k, v]) => `<div><span class="k">${esc(k)}:</span> ${esc(Array.isArray(v) ? v.join(", ") : v)}</div>`)
+      .join("");
+    const link = p.summary && p.summary.link && /^https:\/\/www\.virustotal\.com\//.test(p.summary.link)
+      ? `<div><a href="${esc(p.summary.link)}" target="_blank" rel="noopener noreferrer">open in VirusTotal</a></div>` : "";
+    const status = p.status === "ok" ? (p.cached ? "ok · cached" : "ok") : p.status;
+    return `<div class="prov-box"><h4><span>${esc(p.provider)}</span><span>${esc(status)}</span></h4>
+      ${p.error ? `<div class="k">${esc(p.error)}</div>` : ""}${rows}${link}</div>`;
+  }
+
+  // Prikaz: čista vrednost ili defangovana, po izboru korisnika
+  const shown = (x) => ($("defang").checked ? x.defanged : x.value);
+  let last = null; // poslednji rezultat, da bi prekidač odmah osvežio prikaz
+
+  function render() {
+    if (!last) return;
+    if (last.mode === "extract") {
+      const data = last.data;
+      $("results").innerHTML = data.count
+        ? data.iocs.map((i) => `<div class="card ${i.internal ? "internal" : ""}"><div class="card-head"><span class="ioc">${esc(shown(i))}</span><span class="type">${esc(i.type)}</span>${i.internal ? '<span class="verdict internal">internal</span>' : ""}<button class="ghost copy" data-copy="${esc(shown(i))}">copy</button></div></div>`).join("")
+        : `<div class="empty">No indicators found.</div>`;
+    } else {
+      renderSummary(last.data.results, last.data.truncated);
+      $("results").innerHTML = last.data.count ? last.data.results.map(card).join("") : `<div class="empty">No indicators found.</div>`;
+    }
+  }
+
+  function card(r) {
+    const score = r.score ?? null;
+    return `<div class="card ${esc(r.verdict)}">
+      <div class="card-head">
+        <span class="ioc">${esc(shown(r))}</span>
+        <span class="type">${esc(r.type)}</span>
+        <span class="verdict ${esc(r.verdict)}">${esc(r.verdict)}</span>
+        <button class="ghost copy" data-copy="${esc(shown(r))}">copy</button>
+        <span class="score">${score === null ? "no score" : score + "/100"}
+          <span class="bar"><span style="width:${score ?? 0}%;background:${COLORS[r.verdict] || COLORS.unknown}"></span></span>
+        </span>
+      </div>
+      <ul class="reasons">${r.reasons.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
+      ${r.providers.length ? `<details><summary>provider details</summary><div class="prov">${r.providers.map(providerBox).join("")}</div></details>` : ""}
+    </div>`;
+  }
+
+  function renderSummary(results, truncated) {
+    const counts = {};
+    results.forEach((r) => (counts[r.verdict] = (counts[r.verdict] || 0) + 1));
+    $("summary").innerHTML = Object.entries(counts)
+      .map(([v, n]) => `<span class="pill" style="color:${COLORS[v]}">${n} ${esc(v)}</span>`).join("")
+      + (truncated ? `<span class="pill">showing first 20 indicators</span>` : "");
+  }
+
+  async function run(mode) {
+    const input = $("input").value.trim();
+    if (!input) return;
+    $("go").disabled = $("extract").disabled = true;
+    $("summary").innerHTML = "";
+    $("results").innerHTML = `<div class="empty">${mode === "lookup" ? "Looking up indicators…" : "Extracting…"}</div>`;
+    try {
+      const data = mode === "extract"
+        ? await api("/api/ioc/extract", { input })
+        : await api("/api/ioc/lookup", { input, force_refresh: $("refresh").checked });
+      last = { mode, data };
+      render();
+    } catch (e) {
+      $("results").innerHTML = `<div class="error">Request failed: ${esc(e.message)}</div>`;
+    } finally {
+      $("go").disabled = $("extract").disabled = false;
+    }
+  }
+
+  $("go").addEventListener("click", () => run("lookup"));
+  $("extract").addEventListener("click", () => run("extract"));
+  $("input").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) run("lookup"); });
+  $("results").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-copy]");
+    if (!btn) return;
+    navigator.clipboard?.writeText(btn.dataset.copy).then(() => { btn.textContent = "copied"; setTimeout(() => (btn.textContent = "copy"), 1200); });
+  });
+  // Zapamti izbor za defang (samo u ovom browseru)
+  try { $("defang").checked = localStorage.getItem("gufetto.defang") === "1"; } catch {}
+  $("defang").addEventListener("change", () => {
+    try { localStorage.setItem("gufetto.defang", $("defang").checked ? "1" : "0"); } catch {}
+    render();
+  });
+  loadHealth();
+</script>
+</body>
+</html>
